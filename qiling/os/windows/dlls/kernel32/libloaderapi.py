@@ -74,7 +74,6 @@ def hook_GetModuleFileNameA(self, address, params):
     hModule = params["hModule"]
     lpFilename = params["lpFilename"]
     nSize = params["nSize"]
-
     # GetModuleHandle can return PE_IMAGE_BASE as handle, and GetModuleFileName will try to retrieve it.
     # Pretty much 0 and PE_IMAGE_BASE value should do the same operations
     if hModule == 0 or hModule == self.ql.loader.PE_IMAGE_BASE:
@@ -85,6 +84,8 @@ def hook_GetModuleFileNameA(self, address, params):
             ret = nSize
         else:
             ret = filename_len
+        print(filename.decode())
+        #self.ql.mem.write(lpFilename, filename.encode() + b"\x00")
         self.ql.mem.write(lpFilename, filename + b"\x00")
     else:
         self.ql.dprint(D_INFO, "hModule %x" % hModule)
@@ -117,7 +118,8 @@ def hook_GetModuleFileNameW(self, address, params):
             ret = nSize
         else:
             ret = filename_len
-        self.ql.mem.write(lpFilename, filename + b"\x00")
+        print(filename.decode())
+        self.ql.mem.write(lpFilename, filename + b"\x00") # the string terminator should already be in the file name, keeping it just to be sure
     else:
         raise QlErrorNotImplemented("[!] API not implemented")
     return ret
